@@ -18,7 +18,7 @@ Only add a dependency in the step that needs it, and ask before adding anything 
 | Data models | Pydantic v2 | 1 |
 | Config | python-dotenv, PyYAML | 1 |
 | Testing / linting | pytest, ruff | 1 |
-| LLM provider | TBD (set in `.env`), accessed only via `llm/client.py` | 2 |
+| LLM provider | Configured via LLM_PROVIDER (anthropic | openai | gemini); SDKs only, no LangChain wrappers | 2 |
 | HTTP (job discovery) | httpx | 3 |
 | Database | SQLite via SQLAlchemy | 6 |
 | Resume templates | Jinja2 (HTML + CSS) | 9 |

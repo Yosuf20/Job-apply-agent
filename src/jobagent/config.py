@@ -2,18 +2,22 @@
 
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from dotenv import dotenv_values
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+LLMProviderType = Literal["anthropic", "openai", "gemini"]
 
 
 class Settings(BaseModel):
     """Application settings loaded from environment or .env file."""
 
+    llm_provider: LLMProviderType = "anthropic"
     llm_api_key: str = ""
     model_small: str = ""
     model_strong: str = ""
+    llm_timeout_seconds: int = Field(default=60, ge=1)
     profile_path: Path = Path("data/profile.yaml")
     output_dir: Path = Path("data/output")
     database_path: Path = Path("data/tracker.db")
@@ -43,10 +47,18 @@ def get_settings(env_file: str | Path | None = None) -> Settings:
             return file_vals[env_key]
         return default
 
+    raw_timeout = resolve("LLM_TIMEOUT_SECONDS", 60)
+    try:
+        timeout_val = int(raw_timeout)
+    except (TypeError, ValueError):
+        timeout_val = 60
+
     return Settings(
+        llm_provider=resolve("LLM_PROVIDER", "anthropic"),
         llm_api_key=resolve("LLM_API_KEY", ""),
         model_small=resolve("LLM_MODEL_SMALL", ""),
         model_strong=resolve("LLM_MODEL_STRONG", ""),
+        llm_timeout_seconds=timeout_val,
         profile_path=resolve("PROFILE_PATH", Path("data/profile.yaml")),
         output_dir=resolve("OUTPUT_DIR", Path("data/output")),
         database_path=resolve("DATABASE_PATH", Path("data/tracker.db")),

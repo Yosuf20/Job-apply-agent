@@ -49,3 +49,21 @@ retries and persistence myself); CrewAI/AutoGen (hide too much of the control fl
 **Decision:** Default `model_small` and `model_strong` to empty strings in `Settings` and support an optional `env_file` parameter in `get_settings()`.
 **Why:** Defers LLM provider choice until Step 2 without locking into any vendor upfront, and keeps unit tests hermetic and independent of local developer environment variables.
 **Alternatives considered:** Defaulting to OpenAI models (e.g., `gpt-4o-mini`), which could mislead users before provider selection.
+
+## 008: Provider adapters with lazy SDK imports
+**Date:** 2026-10-31
+**Decision:** Use a thin `Provider` protocol and concrete adapters (`AnthropicProvider`, `OpenAIProvider`, `GeminiProvider`) importing SDKs lazily inside generation calls.
+**Why:** Allows switching LLM providers via `.env` without code changes. Lazy imports ensure that unused SDKs or missing credentials for non-active providers never fail application startup or unit tests.
+**Alternatives considered:** Direct SDK calls in agents (tight coupling); heavy multi-provider wrappers like LiteLLM or LangChain (adds unnecessary dependencies and hides control flow).
+
+## 009: Centralized retry layer with disabled SDK retries
+**Date:** 2026-10-31
+**Decision:** Disable native SDK retries (`max_retries=0` for Anthropic and OpenAI) and manage all retries centrally in `LLMClient`. Only transient errors (429, timeouts, connection errors, 5xx) trigger exponential backoff up to 3 attempts; non-transient errors (4xx auth, bad requests) fail immediately.
+**Why:** Multiple retry layers create nested retries, unpredictable latency spikes, and obscure failure tracking. Centralizing retries in `LLMClient` provides consistent logging, testability via injectable sleep functions, and single-point error monitoring.
+**Alternatives considered:** Relying on default SDK retries (inconsistent across providers, difficult to observe or inject fake timers in unit tests).
+
+## 010: Single-retry structured output repair loop
+**Date:** 2026-10-31
+**Decision:** In `complete_structured`, strip markdown code fences and attempt validation against a Pydantic model. On failure, retry exactly once with the error message appended back to the model, and raise `StructuredOutputError` if the second attempt fails.
+**Why:** Models occasionally format JSON with minor syntax errors or missing required keys. Giving the model one targeted chance to self-correct dramatically improves reliability while capping cost and latency compared to infinite retry loops.
+**Alternatives considered:** Relying purely on provider-specific JSON modes or function calling (incompatible across models and providers); unbounded validation retry loops (expensive and can loop indefinitely).
