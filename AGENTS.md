@@ -14,6 +14,7 @@ Only add a dependency in the step that needs it, and ask before adding anything 
 | Area | Choice | Introduced in step |
 |---|---|---|
 | Language | Python 3.11+ | 1 |
+| Package / env management | uv | 1 |
 | Data models | Pydantic v2 | 1 |
 | Config | python-dotenv, PyYAML | 1 |
 | Testing / linting | pytest, ruff | 1 |
@@ -70,14 +71,17 @@ Only add a dependency in the step that needs it, and ask before adding anything 
 - Never print or log API keys or personal data.
 - Use fake data in tests and examples.
 
-## Commands
+## Commands (uv)
+Package and environment management is done with **uv**. Do not use pip or edit
+dependency lists by hand.
 ```bash
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
-pytest
-ruff check . && ruff format .
+uv sync                        # create/refresh .venv from pyproject.toml + uv.lock
+uv add <package>               # add a runtime dependency
+uv add --dev <package>         # add a dev dependency
+uv run pytest                  # run tests
+uv run ruff check . && uv run ruff format .
 ```
+Commit `uv.lock` along with `pyproject.toml` whenever dependencies change.
 
 ## Git workflow
 - Commit at the end of every completed step, once tests and `ruff` pass.
