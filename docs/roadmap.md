@@ -2,7 +2,7 @@
 
 Build one step at a time. Commit after each step.
 
-- [ ] 1. Scaffold, Pydantic models, example profile
+- [x] 1. Scaffold, Pydantic models, example profile
 - [ ] 2. LLM client wrapper + base Agent class
 - [ ] 3. Job discovery (Greenhouse first)
 - [ ] 4. Extractor agent
@@ -16,7 +16,7 @@ Build one step at a time. Commit after each step.
 - [ ] 12. Applier agent (last, most fragile)
 
 ## Current step
-Step 1
+Step 2
 
 ## Later ideas
 - Cover letter generation

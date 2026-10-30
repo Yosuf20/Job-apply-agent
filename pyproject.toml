@@ -1,7 +1,7 @@
 [project]
-name = "jobapplingagent"
+name = "jobagent"
 version = "0.1.0"
-description = "Add your description here"
+description = "Multi-agent job application assistant in Python"
 readme = "README.md"
 authors = [
     { name = "Yosuf20", email = "jyosuf6@gmail.com" }
@@ -12,9 +12,6 @@ dependencies = [
     "python-dotenv>=1.2.4",
     "pyyaml>=6.0.3",
 ]
-
-[project.scripts]
-jobapplingagent = "jobapplingagent:main"
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

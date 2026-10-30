@@ -1,0 +1,93 @@
+name: "Alex Morgan"
+email: "alex.morgan.fake@example.com"
+phone: "+1-555-019-2834"
+location: "San Francisco, CA"
+links:
+  - "https://github.com/alexmorgan-fake"
+  - "https://linkedin.com/in/alexmorgan-fake"
+summary: >
+  Experienced AI & backend software engineer with 6+ years building distributed
+  systems, LLM applications, and high-throughput data pipelines.
+skills:
+  - name: "Python"
+    tags: ["language", "backend"]
+  - name: "TypeScript"
+    tags: ["language", "frontend", "fullstack"]
+  - name: "FastAPI"
+    tags: ["framework", "backend", "api"]
+  - name: "PostgreSQL"
+    tags: ["database", "sql"]
+  - name: "LangChain & LangGraph"
+    tags: ["ai", "llm", "orchestration"]
+  - name: "Docker & Kubernetes"
+    tags: ["devops", "cloud", "infra"]
+
+experience:
+  - company: "Nova Intelligence Labs"
+    title: "Senior AI Engineer"
+    start: "2023-01"
+    end: "Present"
+    bullets:
+      - id: "exp-nova-1"
+        text: "Architected multi-agent customer support triage pipeline using LangGraph and vector search."
+        tags: ["ai", "agents", "langgraph", "python"]
+        metrics: "Reduced human escalation rate by 42% across 200k monthly conversations."
+      - id: "exp-nova-2"
+        text: "Optimized LLM prompt chaining and token caching for production document extraction pipelines."
+        tags: ["llm", "optimization", "python"]
+        metrics: "Cut API inference costs by 35% while improving extraction accuracy to 98.5%."
+      - id: "exp-nova-3"
+        text: "Led a cross-functional squad of 5 engineers to deliver asynchronous batch document processing service."
+        tags: ["leadership", "backend", "fastapi"]
+        metrics: "Processed over 10M records daily with p99 latency under 250ms."
+
+  - company: "PeakScale Cloud Systems"
+    title: "Software Engineer"
+    start: "2020-06"
+    end: "2022-12"
+    bullets:
+      - id: "exp-peak-1"
+        text: "Designed and implemented event-driven microservices handling distributed ingestion with Kafka and PostgreSQL."
+        tags: ["backend", "distributed-systems", "kafka", "postgres"]
+        metrics: "Scaled system throughput from 5,000 to 25,000 events/sec without downtime."
+      - id: "exp-peak-2"
+        text: "Implemented end-to-end automated testing and CI/CD pipelines with GitHub Actions."
+        tags: ["ci-cd", "devops", "testing"]
+        metrics: "Decreased build failure rates by 60% and shortened deployment cycles from 2 days to 30 minutes."
+      - id: "exp-peak-3"
+        text: "Refactored legacy monolith database queries and introduced connection pooling and read replicas."
+        tags: ["database", "sql", "performance"]
+        metrics: "Improved slow query execution times by 4.5x on high-traffic endpoints."
+
+projects:
+  - name: "DocMind Agent"
+    description: "Autonomous agent for technical documentation question-answering with citation verification."
+    tech: ["Python", "FastAPI", "ChromaDB", "Playwright"]
+    bullets:
+      - id: "proj-docmind-1"
+        text: "Built an open-source autonomous document auditor with automatic source citation tracing."
+        tags: ["ai", "agents", "python", "open-source"]
+        metrics: "Gained 850+ GitHub stars within the first 3 months."
+      - id: "proj-docmind-2"
+        text: "Implemented strict validation guardrails rejecting hallucinated claims via an independent evaluation loop."
+        tags: ["evals", "rag", "guardrails"]
+        metrics: "Achieved 99.1% factual grounding precision on benchmark test sets."
+
+  - name: "VectorFlow Stream"
+    description: "Lightweight distributed embedding ingestion engine for real-time semantic search."
+    tech: ["Python", "AsyncIO", "Redis", "Docker"]
+    bullets:
+      - id: "proj-vectorflow-1"
+        text: "Engineered async worker pool for parallel embedding generation with adaptive backpressure."
+        tags: ["asyncio", "performance", "backend"]
+        metrics: "Handled sustained throughput of 1,200 documents/sec with minimal memory footprint."
+      - id: "proj-vectorflow-2"
+        text: "Authored comprehensive automated integration test suite with synthetic benchmark datasets."
+        tags: ["testing", "benchmarks", "python"]
+        metrics: "Maintained 94% test coverage across all core ingestion modules."
+
+education:
+  - institution: "University of California, Berkeley"
+    degree: "B.S. in Electrical Engineering & Computer Sciences"
+    start: "2016-08"
+    end: "2020-05"

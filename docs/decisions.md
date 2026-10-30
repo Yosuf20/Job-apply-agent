@@ -37,3 +37,15 @@ checkpointed state map directly onto LangGraph features, and it is a recognized 
 Keeping agents independent of the framework keeps them testable and easy to explain.
 **Alternatives considered:** Plain Python state machine (simpler, but I would rebuild
 retries and persistence myself); CrewAI/AutoGen (hide too much of the control flow).
+
+## 006: Bullet ID uniqueness across entire Profile
+**Date:** 2026-10-30
+**Decision:** Enforce global uniqueness of all Bullet IDs across both experience and project sections via a Pydantic model validator on `Profile`.
+**Why:** The Validator agent needs unambiguous provenance for every claim in a generated resume. Unique IDs ensure bullet tracing is 1-to-1 without needing compound keys.
+**Alternatives considered:** Scoping IDs locally per company/project, which would require compound keys throughout agents and prompts.
+
+## 007: Provider-agnostic model configuration defaults
+**Date:** 2026-10-30
+**Decision:** Default `model_small` and `model_strong` to empty strings in `Settings` and support an optional `env_file` parameter in `get_settings()`.
+**Why:** Defers LLM provider choice until Step 2 without locking into any vendor upfront, and keeps unit tests hermetic and independent of local developer environment variables.
+**Alternatives considered:** Defaulting to OpenAI models (e.g., `gpt-4o-mini`), which could mislead users before provider selection.
