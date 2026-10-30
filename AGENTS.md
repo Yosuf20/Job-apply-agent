@@ -49,9 +49,20 @@ pytest
 ruff check . && ruff format .
 ```
 
+## Git workflow
+- Commit at the end of every completed step, once tests and `ruff` pass.
+  One step = one commit (or a few small ones). Never commit failing code.
+- Use Conventional Commit messages, e.g. `feat: add Pydantic models and example profile`,
+  `test: cover profile validation`, `docs: update roadmap`, `fix: handle empty job description`.
+- Before committing, run `git status` and confirm no secrets or personal data are
+  staged (`.env`, `data/profile.yaml`, `data/output/`, `*.db`).
+- Do NOT push to a remote, force-push, rewrite history, or create branches unless I ask.
+- After committing, show me the commit message and `git log --oneline -3`.
+
 ## Definition of done for each step
 - [ ] Code matches the prompt scope, nothing extra
 - [ ] Tests pass
 - [ ] `ruff` is clean
 - [ ] `docs/roadmap.md` checkbox updated
 - [ ] Any design choice recorded in `docs/decisions.md`
+- [ ] Changes committed with a clear message (no secrets staged)
