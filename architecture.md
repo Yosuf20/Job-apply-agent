@@ -21,7 +21,7 @@ Discovery -> Extractor -> Matcher -> (approve?) -> Tailor <-> Validator -> Rende
 | Renderer | Plain code | `TailoredResume` -> PDF |
 | Applier | Agent with browser tools | `Job` + PDF + `Profile` -> filled form (not submitted) |
 | Tracker | Plain code | all stage outputs -> SQLite |
-| Orchestrator | Plain code | runs stages, handles retries and state |
+| Orchestrator | LangGraph | runs the graph, retries, approval interrupts, checkpointed state |
 
 ## Key design ideas
 - **Master profile, not master resume.** `profile.yaml` stores every job, project,

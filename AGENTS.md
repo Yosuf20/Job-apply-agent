@@ -8,6 +8,36 @@ myself.
 
 Read `docs/architecture.md` for design and `docs/roadmap.md` for the current step.
 
+## Tech stack
+Only add a dependency in the step that needs it, and ask before adding anything not listed here.
+
+| Area | Choice | Introduced in step |
+|---|---|---|
+| Language | Python 3.11+ | 1 |
+| Data models | Pydantic v2 | 1 |
+| Config | python-dotenv, PyYAML | 1 |
+| Testing / linting | pytest, ruff | 1 |
+| LLM provider | TBD (set in `.env`), accessed only via `llm/client.py` | 2 |
+| HTTP (job discovery) | httpx | 3 |
+| Database | SQLite via SQLAlchemy | 6 |
+| Resume templates | Jinja2 (HTML + CSS) | 9 |
+| PDF rendering | Playwright (`page.pdf()`) | 9 |
+| PDF text check | pypdf or pdfplumber | 9 |
+| Agent orchestration | LangGraph (graph, retries, human-in-the-loop interrupts, checkpointing) | 10 |
+| Tracing / observability | LangSmith (optional) plus own logging of cost and latency | 10 |
+| CLI | Typer | 10 |
+| UI | Streamlit or FastAPI (decide at step 11) | 11 |
+| Browser automation | Playwright | 12 |
+
+## LangGraph usage rules
+- Each agent stays a plain, typed Python function or class (Pydantic in, Pydantic out)
+  that works and is tested WITHOUT LangGraph. LangGraph only wires them together in Step 10.
+- Define one graph state model (Pydantic) in `orchestrator.py`. Nodes read and update it.
+- The Tailor <-> Validator loop is a conditional edge with a max retry count.
+- Human approval gates use LangGraph interrupts with a checkpointer (SQLite).
+- Do not pull in the full LangChain framework. Use `langgraph` plus the single LLM client in `llm/client.py`.
+  Ask before adding any other `langchain-*` package.
+
 ## Working rules
 1. **One feature at a time.** Only implement what the current prompt asks for.
    Do not scaffold or stub future steps.

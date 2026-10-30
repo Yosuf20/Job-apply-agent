@@ -29,3 +29,11 @@ are public and more stable.
 ## 004: Bullet ids in the profile
 **Decision:** Every profile bullet has a stable id.
 **Why:** Lets the validator trace each generated claim back to its source.
+
+## 005: LangGraph for orchestration
+**Decision:** Build agents as plain typed functions first, then wire them with LangGraph in Step 10.
+**Why:** The Tailor <-> Validator retry loop, human approval gates (interrupts), and
+checkpointed state map directly onto LangGraph features, and it is a recognized tool.
+Keeping agents independent of the framework keeps them testable and easy to explain.
+**Alternatives considered:** Plain Python state machine (simpler, but I would rebuild
+retries and persistence myself); CrewAI/AutoGen (hide too much of the control flow).
