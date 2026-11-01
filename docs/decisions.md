@@ -58,7 +58,7 @@ retries and persistence myself); CrewAI/AutoGen (hide too much of the control fl
 
 ## 009: Centralized retry layer with disabled SDK retries
 **Date:** 2026-10-31
-**Decision:** Disable native SDK retries (`max_retries=0` for Anthropic and OpenAI) and manage all retries centrally in `LLMClient`. Only transient errors (429, timeouts, connection errors, 5xx) trigger exponential backoff up to 3 attempts; non-transient errors (4xx auth, bad requests) fail immediately.
+**Decision:** Disable native SDK retries (`max_retries=0` for Anthropic and OpenAI, and `HttpRetryOptions(attempts=1)` for Google GenAI) and manage all retries centrally in `LLMClient`. Only transient errors (429, timeouts, network/connection errors, 5xx) trigger exponential backoff up to 3 attempts; non-transient errors (4xx auth, bad requests) fail immediately. Note that Google GenAI's `HttpOptions.timeout` is in milliseconds (converted from seconds), and `HttpRetryOptions(attempts=1)` sets tenacity's `stop_after_attempt(1)`, meaning 1 initial attempt and 0 retries.
 **Why:** Multiple retry layers create nested retries, unpredictable latency spikes, and obscure failure tracking. Centralizing retries in `LLMClient` provides consistent logging, testability via injectable sleep functions, and single-point error monitoring.
 **Alternatives considered:** Relying on default SDK retries (inconsistent across providers, difficult to observe or inject fake timers in unit tests).
 

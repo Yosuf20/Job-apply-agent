@@ -1,5 +1,6 @@
 """Tests for LLM client, provider adapters, error handling, and structured output."""
 
+import ssl
 from unittest.mock import MagicMock, patch
 
 import httpx
@@ -12,6 +13,7 @@ from jobagent.llm.client import (
     GeminiProvider,
     LLMAuthError,
     LLMClient,
+    LLMNonTransientError,
     LLMRequestError,
     LLMTransientError,
     OpenAIProvider,
@@ -174,6 +176,29 @@ def test_transient_error_exceeds_max_attempts_raises() -> None:
     assert slept_durations == [0.5, 1.0]
 
 
+def test_llm_client_retries_transient_network_errors_3_times() -> None:
+    """LLMClient retries transient network errors (ConnectTimeout / ReadTimeout) 3 times."""
+    slept_durations: list[float] = []
+
+    provider = FakeProvider(
+        responses=[
+            LLMTransientError("ConnectTimeout"),
+            LLMTransientError("ReadTimeout"),
+            '{"role": "ok", "confidence": 0.8}',
+        ]
+    )
+    client = LLMClient(
+        provider=provider,
+        model_small="test-small",
+        sleep_fn=slept_durations.append,
+    )
+
+    resp = client.complete(system="", prompt="Hi", tier="small")
+    assert "ok" in resp.text
+    assert len(provider.calls) == 3
+    assert slept_durations == [0.5, 1.0]
+
+
 def test_non_transient_error_does_not_retry() -> None:
     """Auth errors and bad request errors must NOT be retried."""
     slept_durations: list[float] = []
@@ -240,8 +265,54 @@ def test_get_client_instantiates_supported_providers() -> None:
 
 
 # -----------------------------------------------------------------------------
-# Provider SDK exception translation tests (fake exceptions, no network)
+# Provider SDK exception translation & timeout unit tests (fake exceptions, no network)
 # -----------------------------------------------------------------------------
+
+
+def test_anthropic_and_openai_timeout_in_seconds() -> None:
+    """Anthropic and OpenAI adapters pass timeout in seconds."""
+    with patch("anthropic.Anthropic") as mock_ant:
+        mock_ant.return_value.messages.create.return_value = MagicMock(
+            content=[MagicMock(text="hi")],
+            usage=MagicMock(input_tokens=1, output_tokens=1),
+        )
+        AnthropicProvider(api_key="k", timeout_seconds=45).generate("s", "p", "m")
+        _, ant_kwargs = mock_ant.call_args
+        assert ant_kwargs.get("timeout") == 45.0
+        assert ant_kwargs.get("max_retries") == 0
+
+    with patch("openai.OpenAI") as mock_oa:
+        mock_oa.return_value.chat.completions.create.return_value = MagicMock(
+            choices=[MagicMock(message=MagicMock(content="hi"))],
+            usage=None,
+        )
+        OpenAIProvider(api_key="k", timeout_seconds=45).generate("s", "p", "m")
+        _, oa_kwargs = mock_oa.call_args
+        assert oa_kwargs.get("timeout") == 45.0
+        assert oa_kwargs.get("max_retries") == 0
+
+
+def test_gemini_timeout_converted_to_milliseconds() -> None:
+    """Gemini adapter converts timeout from seconds to milliseconds (60s -> 60000ms)."""
+    from google.genai import types
+
+    provider = GeminiProvider(api_key="dummy", timeout_seconds=60)
+    with patch("google.genai.Client") as mock_cls:
+        mock_client = MagicMock()
+        mock_cls.return_value = mock_client
+        mock_client.models.generate_content.return_value = MagicMock(
+            text="hi", usage_metadata=None
+        )
+
+        provider.generate("sys", "prompt", "model")
+
+        assert mock_cls.call_count == 1
+        _, kwargs = mock_cls.call_args
+        http_opts = kwargs.get("http_options")
+        assert isinstance(http_opts, types.HttpOptions)
+        assert http_opts.timeout == 60000
+        assert http_opts.retry_options is not None
+        assert http_opts.retry_options.attempts == 1
 
 
 def test_anthropic_adapter_exception_translation() -> None:
@@ -278,6 +349,20 @@ def test_anthropic_adapter_exception_translation() -> None:
             "bad parameter", response=dummy_resp_400, body=None
         )
         with pytest.raises(LLMRequestError):
+            provider.generate("sys", "prompt", "model")
+
+        # 4. httpx.ConnectTimeout -> LLMTransientError
+        mock_client.messages.create.side_effect = httpx.ConnectTimeout(
+            "connect timed out"
+        )
+        with pytest.raises(LLMTransientError):
+            provider.generate("sys", "prompt", "model")
+
+        # 5. SSL handshake timeout -> LLMTransientError
+        mock_client.messages.create.side_effect = ssl.SSLError(
+            "The handshake operation timed out"
+        )
+        with pytest.raises(LLMTransientError):
             provider.generate("sys", "prompt", "model")
 
 
@@ -317,9 +402,23 @@ def test_openai_adapter_exception_translation() -> None:
         with pytest.raises(LLMRequestError):
             provider.generate("sys", "prompt", "model")
 
+        # 4. httpx.ReadTimeout -> LLMTransientError
+        mock_client.chat.completions.create.side_effect = httpx.ReadTimeout(
+            "read timed out"
+        )
+        with pytest.raises(LLMTransientError):
+            provider.generate("sys", "prompt", "model")
+
+        # 5. SSL handshake timeout -> LLMTransientError
+        mock_client.chat.completions.create.side_effect = ssl.SSLError(
+            "The handshake operation timed out"
+        )
+        with pytest.raises(LLMTransientError):
+            provider.generate("sys", "prompt", "model")
+
 
 def test_gemini_adapter_exception_translation() -> None:
-    """Gemini adapter maps APIError status codes to transient vs non-transient errors."""
+    """Gemini adapter maps APIError status codes and network errors accurately."""
     from google.genai import errors
 
     provider = GeminiProvider(api_key="dummy")
@@ -354,4 +453,39 @@ def test_gemini_adapter_exception_translation() -> None:
             400, "invalid argument"
         )
         with pytest.raises(LLMRequestError):
+            provider.generate("sys", "prompt", "model")
+
+        # 5. httpx.ConnectTimeout -> LLMTransientError
+        mock_client.models.generate_content.side_effect = httpx.ConnectTimeout(
+            "connect timed out"
+        )
+        with pytest.raises(LLMTransientError, match="ConnectTimeout"):
+            provider.generate("sys", "prompt", "model")
+
+        # 6. httpx.ReadTimeout -> LLMTransientError
+        mock_client.models.generate_content.side_effect = httpx.ReadTimeout(
+            "read timed out"
+        )
+        with pytest.raises(LLMTransientError, match="ReadTimeout"):
+            provider.generate("sys", "prompt", "model")
+
+        # 7. SSL handshake timeout -> LLMTransientError
+        mock_client.models.generate_content.side_effect = ssl.SSLError(
+            "The handshake operation timed out"
+        )
+        with pytest.raises(LLMTransientError, match="SSLError"):
+            provider.generate("sys", "prompt", "model")
+
+        # 8. Non-timeout SSL error -> LLMNonTransientError
+        mock_client.models.generate_content.side_effect = ssl.SSLError(
+            "certificate verify failed"
+        )
+        with pytest.raises(LLMNonTransientError, match="SSLError"):
+            provider.generate("sys", "prompt", "model")
+
+        # 9. Truly unknown exception includes type name in message
+        mock_client.models.generate_content.side_effect = RuntimeError(
+            "internal unexpected failure"
+        )
+        with pytest.raises(LLMNonTransientError, match=r"RuntimeError"):
             provider.generate("sys", "prompt", "model")

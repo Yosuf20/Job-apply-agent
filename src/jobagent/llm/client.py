@@ -2,10 +2,12 @@
 
 import logging
 import re
+import ssl
 import time
 from collections.abc import Callable
 from typing import Any, Literal, Protocol, TypeVar
 
+import httpx
 from pydantic import BaseModel, Field, ValidationError
 
 from jobagent.config import Settings, get_settings
@@ -84,6 +86,7 @@ class AnthropicProvider:
     ) -> LLMResponse:
         import anthropic
 
+        # Anthropic SDK expects timeout in seconds (passed as float or int).
         client = anthropic.Anthropic(
             api_key=self.api_key,
             timeout=float(self.timeout_seconds),
@@ -127,8 +130,31 @@ class AnthropicProvider:
             raise LLMRequestError(
                 f"Anthropic client status {e.status_code}: {e}"
             ) from e
+        except (
+            httpx.TimeoutException,
+            httpx.NetworkError,
+            TimeoutError,
+            ConnectionError,
+        ) as e:
+            raise LLMTransientError(
+                f"Anthropic network/timeout error ({type(e).__name__}): {e}"
+            ) from e
+        except ssl.SSLError as e:
+            if "timed out" in str(e).lower() or "timeout" in str(e).lower():
+                raise LLMTransientError(
+                    f"Anthropic SSL timeout error ({type(e).__name__}): {e}"
+                ) from e
+            raise LLMNonTransientError(
+                f"Anthropic SSL error ({type(e).__name__}): {e}"
+            ) from e
         except anthropic.AnthropicError as e:
-            raise LLMNonTransientError(f"Anthropic error: {e}") from e
+            raise LLMNonTransientError(
+                f"Anthropic error ({type(e).__name__}): {e}"
+            ) from e
+        except Exception as e:
+            raise LLMNonTransientError(
+                f"Anthropic unexpected error ({type(e).__name__}): {e}"
+            ) from e
 
         latency = time.perf_counter() - start
         text_content = ""
@@ -162,6 +188,7 @@ class OpenAIProvider:
     ) -> LLMResponse:
         import openai
 
+        # OpenAI SDK expects timeout in seconds (passed as float or int).
         client = openai.OpenAI(
             api_key=self.api_key,
             timeout=float(self.timeout_seconds),
@@ -210,8 +237,29 @@ class OpenAIProvider:
             if e.status_code in (401, 403):
                 raise LLMAuthError(f"OpenAI auth status {e.status_code}: {e}") from e
             raise LLMRequestError(f"OpenAI client status {e.status_code}: {e}") from e
+        except (
+            httpx.TimeoutException,
+            httpx.NetworkError,
+            TimeoutError,
+            ConnectionError,
+        ) as e:
+            raise LLMTransientError(
+                f"OpenAI network/timeout error ({type(e).__name__}): {e}"
+            ) from e
+        except ssl.SSLError as e:
+            if "timed out" in str(e).lower() or "timeout" in str(e).lower():
+                raise LLMTransientError(
+                    f"OpenAI SSL timeout error ({type(e).__name__}): {e}"
+                ) from e
+            raise LLMNonTransientError(
+                f"OpenAI SSL error ({type(e).__name__}): {e}"
+            ) from e
         except openai.OpenAIError as e:
-            raise LLMNonTransientError(f"OpenAI error: {e}") from e
+            raise LLMNonTransientError(f"OpenAI error ({type(e).__name__}): {e}") from e
+        except Exception as e:
+            raise LLMNonTransientError(
+                f"OpenAI unexpected error ({type(e).__name__}): {e}"
+            ) from e
 
         latency = time.perf_counter() - start
         text = resp.choices[0].message.content or ""
@@ -245,9 +293,14 @@ class GeminiProvider:
         from google import genai
         from google.genai import errors, types
 
+        # Google GenAI SDK expects HttpOptions timeout in milliseconds (converted from seconds).
+        # HttpRetryOptions(attempts=1) disables internal SDK retries (1 total attempt, 0 retries).
         client = genai.Client(
             api_key=self.api_key,
-            http_options=types.HttpOptions(timeout=float(self.timeout_seconds)),
+            http_options=types.HttpOptions(
+                timeout=int(self.timeout_seconds * 1000),
+                retry_options=types.HttpRetryOptions(attempts=1),
+            ),
         )
 
         config_args: dict[str, Any] = {}
@@ -275,11 +328,28 @@ class GeminiProvider:
                 raise LLMAuthError(f"Gemini authentication error ({code}): {e}") from e
             if isinstance(code, int) and 400 <= code < 500:
                 raise LLMRequestError(f"Gemini request error ({code}): {e}") from e
-            raise LLMNonTransientError(f"Gemini error ({code}): {e}") from e
-        except (TimeoutError, ConnectionError) as e:
-            raise LLMTransientError(f"Gemini connection/timeout error: {e}") from e
+            raise LLMNonTransientError(f"Gemini error ({type(e).__name__}): {e}") from e
+        except (
+            httpx.TimeoutException,
+            httpx.NetworkError,
+            TimeoutError,
+            ConnectionError,
+        ) as e:
+            raise LLMTransientError(
+                f"Gemini network/timeout error ({type(e).__name__}): {e}"
+            ) from e
+        except ssl.SSLError as e:
+            if "timed out" in str(e).lower() or "timeout" in str(e).lower():
+                raise LLMTransientError(
+                    f"Gemini SSL timeout error ({type(e).__name__}): {e}"
+                ) from e
+            raise LLMNonTransientError(
+                f"Gemini SSL error ({type(e).__name__}): {e}"
+            ) from e
         except Exception as e:
-            raise LLMNonTransientError(f"Gemini unexpected error: {e}") from e
+            raise LLMNonTransientError(
+                f"Gemini unexpected error ({type(e).__name__}): {e}"
+            ) from e
 
         latency = time.perf_counter() - start
         text = resp.text or ""
