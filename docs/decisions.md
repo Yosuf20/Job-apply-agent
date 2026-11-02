@@ -106,3 +106,21 @@ locations are treated as unknown and kept when `location_include` is set.
 india/indiana). Whole-word matching matches how people write filter keywords.
 **Alternatives considered:** Substring `in` checks (too broad); LLM-based filtering (slow,
 nondeterministic, and discovery is not an agent).
+
+## 015: Extractor context is limited to job text
+**Date:** 2026-11-02
+**Decision:** The Extractor agent receives only the job title, company, location, and
+description, with long descriptions truncated at a configurable character limit.
+**Why:** Requirement extraction should be grounded solely in the posting and bounded
+for predictable prompt size.
+**Alternatives considered:** Including candidate profile data (irrelevant to extraction);
+allowing unbounded descriptions (unreliable prompt size).
+
+## 016: Normalize extractor output in code
+**Date:** 2026-11-02
+**Decision:** Normalize whitespace, empty entries, case-insensitive duplicates, skill
+overlaps, and unsupported seniority values after the LLM response in Python.
+**Why:** Deterministic post-processing provides consistent typed output regardless of
+model formatting and avoids relying on prompt instructions for data integrity.
+**Alternatives considered:** Prompt-only normalization (not deterministic); rejecting
+responses with minor normalization issues (needlessly brittle).
