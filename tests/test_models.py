@@ -136,6 +136,7 @@ def test_get_settings_defaults_when_no_env_present(
         "PROFILE_PATH",
         "OUTPUT_DIR",
         "DATABASE_PATH",
+        "SOURCES_PATH",
     ]
     for var in env_vars_to_clear:
         monkeypatch.delenv(var, raising=False)
@@ -149,3 +150,4 @@ def test_get_settings_defaults_when_no_env_present(
     assert settings.profile_path == Path("data/profile.yaml")
     assert settings.output_dir == Path("data/output")
     assert settings.database_path == Path("data/tracker.db")
+    assert settings.sources_path == Path("data/sources.yaml")

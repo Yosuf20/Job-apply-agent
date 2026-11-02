@@ -21,6 +21,7 @@ class Settings(BaseModel):
     profile_path: Path = Path("data/profile.yaml")
     output_dir: Path = Path("data/output")
     database_path: Path = Path("data/tracker.db")
+    sources_path: Path = Path("data/sources.yaml")
 
 
 def get_settings(env_file: str | Path | None = None) -> Settings:
@@ -62,4 +63,5 @@ def get_settings(env_file: str | Path | None = None) -> Settings:
         profile_path=resolve("PROFILE_PATH", Path("data/profile.yaml")),
         output_dir=resolve("OUTPUT_DIR", Path("data/output")),
         database_path=resolve("DATABASE_PATH", Path("data/tracker.db")),
+        sources_path=resolve("SOURCES_PATH", Path("data/sources.yaml")),
     )

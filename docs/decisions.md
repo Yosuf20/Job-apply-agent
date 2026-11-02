@@ -67,3 +67,42 @@ retries and persistence myself); CrewAI/AutoGen (hide too much of the control fl
 **Decision:** In `complete_structured`, strip markdown code fences and attempt validation against a Pydantic model. On failure, retry exactly once with the error message appended back to the model, and raise `StructuredOutputError` if the second attempt fails.
 **Why:** Models occasionally format JSON with minor syntax errors or missing required keys. Giving the model one targeted chance to self-correct dramatically improves reliability while capping cost and latency compared to infinite retry loops.
 **Alternatives considered:** Relying purely on provider-specific JSON modes or function calling (incompatible across models and providers); unbounded validation retry loops (expensive and can loop indefinitely).
+
+## 011: Public Greenhouse Job Board API only
+**Date:** 2026-11-02
+**Decision:** Discover Greenhouse jobs with `httpx` against
+`GET https://boards-api.greenhouse.io/v1/boards/{board}/jobs?content=true`.
+No HTML scraping libraries, no LinkedIn/Indeed automation.
+**Why:** The Job Board API is public, unauthenticated, and returns structured JSON.
+Scraping career HTML is brittle and the project already forbids LinkedIn/Indeed.
+**Alternatives considered:** BeautifulSoup/Playwright scraping of board HTML (fragile,
+against the ATS-only rule).
+
+## 012: Stdlib HTML-to-text for job descriptions
+**Date:** 2026-11-02
+**Decision:** Convert Greenhouse `content` with `html.unescape` plus `html.parser.HTMLParser`.
+Skip `script`/`style`/`noscript`, turn paragraphs and `<br>` into line breaks, and prefix
+list items with `- `.
+**Why:** Descriptions are HTML-escaped HTML. The standard library is enough, keeps
+dependencies unchanged, and is easy to explain in an interview.
+**Alternatives considered:** BeautifulSoup or html2text (extra dependency for a small transform).
+
+## 013: Per-board error isolation
+**Date:** 2026-11-02
+**Decision:** `discover()` catches `BoardNotFoundError` and `BoardFetchError` per board,
+records them on `DiscoveryResult.errors`, and continues. That includes 404s, 4xx, exhausted
+retries, non-JSON 200 bodies, and JSON missing the `jobs` key.
+**Why:** One bad or unknown board token should not wipe out jobs from the rest of the list.
+**Alternatives considered:** Fail the whole run on the first error (simpler, but unusable
+with a mixed sources file).
+
+## 014: Whole-word title and location matching
+**Date:** 2026-11-02
+**Decision:** `JobFilter` include/exclude terms use case-insensitive regex with `\\b` and
+`re.escape`. `"intern"` drops "Software Engineering Intern" but keeps "Internal Tools Engineer".
+`"india"` matches "Bengaluru, India" but not "Indiana, USA". Empty or whitespace-only
+locations are treated as unknown and kept when `location_include` is set.
+**Why:** Substring matching produces false positives on common stems (intern/internal,
+india/indiana). Whole-word matching matches how people write filter keywords.
+**Alternatives considered:** Substring `in` checks (too broad); LLM-based filtering (slow,
+nondeterministic, and discovery is not an agent).
