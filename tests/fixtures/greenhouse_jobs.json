@@ -1,0 +1,29 @@
+{
+  "jobs": [
+    {
+      "id": 127817,
+      "internal_job_id": 144381,
+      "title": "Software Engineering Intern",
+      "updated_at": "2016-01-14T10:55:28-05:00",
+      "location": {
+        "name": "NYC"
+      },
+      "absolute_url": "https://boards.greenhouse.io/board1/jobs/127817",
+      "content": "This is the job description. &lt;p&gt;Build things.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Write tests&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 127818,
+      "title": "Internal Tools Engineer",
+      "company_name": "Acme Corp",
+      "updated_at": "2016-02-01T10:00:00-05:00",
+      "location": {
+        "name": "Bengaluru, India"
+      },
+      "absolute_url": "https://boards.greenhouse.io/board1/jobs/127818",
+      "content": "<p>Work on internal tools.</p>"
+    }
+  ],
+  "meta": {
+    "total": 2
+  }
+}

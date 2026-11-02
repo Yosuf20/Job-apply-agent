@@ -1,0 +1,12 @@
+# Copy to data/sources.yaml and replace the placeholder board tokens.
+# Board tokens are the Greenhouse job-board slug (letters, digits, "-" and "_").
+
+greenhouse:
+  boards:
+    - board1
+    - board2
+
+filters:
+  title_include: []
+  title_exclude: []
+  location_include: []
