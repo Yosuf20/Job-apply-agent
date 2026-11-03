@@ -124,3 +124,13 @@ overlaps, and unsupported seniority values after the LLM response in Python.
 model formatting and avoids relying on prompt instructions for data integrity.
 **Alternatives considered:** Prompt-only normalization (not deterministic); rejecting
 responses with minor normalization issues (needlessly brittle).
+
+## 017: Hand-written extractor evaluation with pure metrics
+**Date:** 2026-11-03
+**Decision:** Evaluate extractor outputs against committed hand-written gold labels
+using dependency-light pure metric functions, and save manual evaluation results with
+the provider, model names, and extractor prompt SHA-256 hash.
+**Why:** Gold labels make prompt/model comparisons measurable and reproducible without
+network access in tests. Hashing the prompt identifies which prompt produced each run.
+**Alternatives considered:** Subjective manual comparison without metrics; storing
+results without prompt provenance.
