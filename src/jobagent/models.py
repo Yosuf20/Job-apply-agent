@@ -148,3 +148,10 @@ def load_profile(path: str | Path) -> Profile:
         )
 
     return Profile.model_validate(data)
+
+
+class MatchInput(BaseModel):
+    profile: Profile
+    requirements: JobRequirements
+    job_id: str
+    job_title: str

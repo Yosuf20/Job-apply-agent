@@ -134,3 +134,21 @@ the provider, model names, and extractor prompt SHA-256 hash.
 network access in tests. Hashing the prompt identifies which prompt produced each run.
 **Alternatives considered:** Subjective manual comparison without metrics; storing
 results without prompt provenance.
+
+## 018: Code-owned matcher skill comparison
+**Date:** 2026-11-03
+**Decision:** Compare required skills with the profile in deterministic code and let
+the LLM judge only overall fit and write reasoning. Matcher prompts exclude personal
+profile data.
+**Why:** Code makes matched and missing skills reproducible and prevents the model from
+inventing candidate capabilities or exposing unnecessary personal information.
+**Alternatives considered:** Letting the LLM select matched skills (less reliable);
+including the full profile (unnecessary privacy exposure).
+
+## 019: Matcher evaluation compares model and coverage baseline
+**Date:** 2026-11-03
+**Decision:** Evaluate model scores beside a code-only must-have coverage baseline using
+MAE, band accuracy, and Spearman correlation.
+**Why:** The baseline shows whether LLM judgment adds value beyond deterministic skill
+coverage.
+**Alternatives considered:** Reporting model scores without a deterministic comparator.

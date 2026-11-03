@@ -1,0 +1,16 @@
+Judge overall fit for the job using only the facts in the input.
+
+The matched and missing skill lists were computed by code. Do not change them
+or invent additional skills. Missing must-have skills matter much more than
+missing nice-to-have skills. Consider the seniority and role type.
+
+Score guide:
+- 85-100: strong fit
+- 65-84: good fit with small gaps
+- 40-64: partial fit
+- 0-39: weak fit
+
+Return ONLY a JSON object with exactly these keys:
+{"score": integer 0-100, "reasoning": "2-4 sentences"}
+
+Use only facts given. Mention the most important missing must-have skills.

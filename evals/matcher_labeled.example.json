@@ -1,0 +1,62 @@
+[
+  {
+    "job_id": "example-backend",
+    "job_title": "Senior Backend Engineer",
+    "requirements": {
+      "must_have_skills": ["Python", "FastAPI", "PostgreSQL"],
+      "nice_to_have_skills": ["Docker", "Kafka"],
+      "seniority": "senior",
+      "role_type": "backend",
+      "keywords": ["distributed systems"]
+    },
+    "expected_band": "high"
+  },
+  {
+    "job_id": "example-ai",
+    "job_title": "Senior AI Engineer",
+    "requirements": {
+      "must_have_skills": ["Python", "LangGraph"],
+      "nice_to_have_skills": ["vector search", "LLM"],
+      "seniority": "senior",
+      "role_type": "ml",
+      "keywords": ["multi-agent"]
+    },
+    "expected_band": "high"
+  },
+  {
+    "job_id": "example-platform",
+    "job_title": "Platform Engineer",
+    "requirements": {
+      "must_have_skills": ["Python", "Kubernetes", "Redis"],
+      "nice_to_have_skills": ["AWS", "Terraform"],
+      "seniority": "mid",
+      "role_type": "devops",
+      "keywords": ["cloud"]
+    },
+    "expected_band": "medium"
+  },
+  {
+    "job_id": "example-frontend",
+    "job_title": "Frontend Engineer",
+    "requirements": {
+      "must_have_skills": ["TypeScript", "React"],
+      "nice_to_have_skills": ["CSS", "Next.js"],
+      "seniority": "mid",
+      "role_type": "frontend",
+      "keywords": ["web"]
+    },
+    "expected_band": "medium"
+  },
+  {
+    "job_id": "example-mobile",
+    "job_title": "Mobile Engineer",
+    "requirements": {
+      "must_have_skills": ["Swift", "iOS"],
+      "nice_to_have_skills": ["Kotlin", "Android"],
+      "seniority": "senior",
+      "role_type": "mobile",
+      "keywords": ["mobile applications"]
+    },
+    "expected_band": "low"
+  }
+]

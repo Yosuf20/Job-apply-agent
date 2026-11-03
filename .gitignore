@@ -19,4 +19,5 @@ data/profile.yaml
 data/sources.yaml
 data/output/
 evals/results/
+evals/matcher_labeled.json
 *.db
