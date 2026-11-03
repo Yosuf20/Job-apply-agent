@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import re
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +14,8 @@ _PROMPT_PATH = Path(__file__).parent / "prompts" / "extractor.txt"
 _ALLOWED_SENIORITY = frozenset(
     {"intern", "junior", "mid", "senior", "staff", "lead", "unspecified"}
 )
+_WORD_RE = re.compile(r"\b\w+\b", re.IGNORECASE)
+logger = logging.getLogger(__name__)
 
 
 class ExtractorAgent(Agent[Job, JobRequirements]):
@@ -55,15 +59,33 @@ class ExtractorAgent(Agent[Job, JobRequirements]):
 
     def run(self, input_data: Job) -> JobRequirements:
         """Extract and normalize the model output."""
-        return _normalize_requirements(super().run(input_data))
+        job_text = (
+            f"{input_data.title} {input_data.company} {input_data.location} "
+            f"{input_data.description}"
+        )
+        return _normalize_requirements(super().run(input_data), job_text)
 
 
-def _normalize_requirements(requirements: JobRequirements) -> JobRequirements:
-    must_have = _unique_trimmed(requirements.must_have_skills)
-    nice_to_have = _unique_trimmed(requirements.nice_to_have_skills)
+def _normalize_requirements(
+    requirements: JobRequirements,
+    job_text: str,
+) -> JobRequirements:
+    text_words = {word.casefold() for word in _WORD_RE.findall(job_text)}
+    must_have = _ground_skills(
+        _unique_trimmed(requirements.must_have_skills), text_words
+    )
+    nice_to_have = _ground_skills(
+        _unique_trimmed(requirements.nice_to_have_skills), text_words
+    )
     must_have_keys = {skill.casefold() for skill in must_have}
     nice_to_have = [
         skill for skill in nice_to_have if skill.casefold() not in must_have_keys
+    ]
+    skill_keys = {skill.casefold() for skill in (*must_have, *nice_to_have)}
+    keywords = [
+        keyword
+        for keyword in _unique_trimmed(requirements.keywords)
+        if keyword.casefold() not in skill_keys
     ]
 
     seniority = requirements.seniority.strip().casefold()
@@ -76,7 +98,7 @@ def _normalize_requirements(requirements: JobRequirements) -> JobRequirements:
             "nice_to_have_skills": nice_to_have,
             "seniority": seniority,
             "role_type": requirements.role_type.strip(),
-            "keywords": _unique_trimmed(requirements.keywords),
+            "keywords": keywords,
         }
     )
 
@@ -91,3 +113,14 @@ def _unique_trimmed(values: list[str]) -> list[str]:
             result.append(trimmed)
             seen.add(key)
     return result
+
+
+def _ground_skills(skills: list[str], text_words: set[str]) -> list[str]:
+    grounded: list[str] = []
+    for skill in skills:
+        skill_words = {word.casefold() for word in _WORD_RE.findall(skill)}
+        if skill_words and skill_words <= text_words:
+            grounded.append(skill)
+        else:
+            logger.info("Dropped ungrounded extracted skill: %s", skill)
+    return grounded

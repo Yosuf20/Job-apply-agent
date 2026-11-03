@@ -1,0 +1,15 @@
+{
+  "razorpay_sales": {
+    "must_have_skills": [
+      "Payment Gateway", "Commercial negotiation", "Consultative sales",
+      "Government relations", "Bank relationship management",
+      "Stakeholder management", "Communication"
+    ],
+    "nice_to_have_skills": [
+      "PCI-DSS", "RBI regulations", "GST", "e-invoicing",
+      "Digital payment policies"
+    ],
+    "seniority": "mid",
+    "role_type": "sales"
+  }
+}

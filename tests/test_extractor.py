@@ -6,7 +6,9 @@ from jobagent.models import Job, JobRequirements
 from tests.conftest import FakeProvider
 
 
-def _job(description: str = "Build backend services with Python.") -> Job:
+def _job(
+    description: str = "Build backend services with Python, SQL, and AWS.",
+) -> Job:
     return Job(
         id="greenhouse:board1:1",
         company="Acme",
@@ -57,13 +59,13 @@ def test_json_code_fences_are_supported() -> None:
     assert agent.run(_job()).seniority == "intern"
 
 
-def test_duplicates_and_cross_list_overlaps_are_cleaned() -> None:
+def test_duplicates_cross_list_overlaps_and_keyword_skill_duplicates_are_cleaned() -> None:
     agent, _ = _agent(
         [
             (
                 '{"must_have_skills":[" Python ","python","SQL"],'
                 '"nice_to_have_skills":["sql"," AWS ","AWS",""],"seniority":"mid",'
-                '"role_type":" backend ","keywords":[" APIs ","apis",""]}'
+                '"role_type":" backend ","keywords":[" APIs ","apis","python",""]}'
             )
         ]
     )
@@ -74,6 +76,30 @@ def test_duplicates_and_cross_list_overlaps_are_cleaned() -> None:
     assert result.nice_to_have_skills == ["AWS"]
     assert result.role_type == "backend"
     assert result.keywords == ["APIs"]
+
+
+def test_ungrounded_skills_are_dropped_and_logged(caplog) -> None:
+    agent, _ = _agent(
+        [
+            (
+                '{"must_have_skills":["Python","Kubernetes"],'
+                '"nice_to_have_skills":["Machine Learning"],"seniority":"mid",'
+                '"role_type":"backend","keywords":[]}'
+            )
+        ]
+    )
+
+    with caplog.at_level("INFO", logger="jobagent.agents.extractor"):
+        result = agent.run(
+            _job(
+                "Build backend services with Python, machine vision, and "
+                "learning systems."
+            )
+        )
+
+    assert result.must_have_skills == ["Python"]
+    assert result.nice_to_have_skills == ["Machine Learning"]
+    assert "Kubernetes" in caplog.text
 
 
 def test_invalid_seniority_becomes_unspecified() -> None:
