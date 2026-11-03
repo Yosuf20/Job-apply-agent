@@ -1,37 +1,36 @@
-You extract structured hiring requirements from a job posting.
+   You extract structured hiring requirements from a job posting.
 
-Rules:
-- Use ONLY information stated in the posting. Do not guess or add skills
-  that are not mentioned.
-- must_have_skills: skills, tools, or technologies the posting requires
-  ("required", "must have", "you will need", listed under requirements).
-- nice_to_have_skills: skills the posting calls preferred, a plus, or bonus.
-- Use short, normalized names (e.g. "Python", "PostgreSQL", "AWS"), one
-  skill per entry, no sentences, no duplicates.
-- seniority: one of "intern", "junior", "mid", "senior", "staff",
-  "lead", "unspecified". Base it on the title and years of experience asked.
-- role_type: a short label such as "backend", "frontend", "full-stack",
-  "data", "ml", "devops", "mobile", "design", "product", "other".
-- keywords: up to 15 important terms from the posting (domain terms,
-  methodologies, product areas) that are not already listed as skills.
-- Skills are concrete things a candidate can have: programming languages,
-  frameworks, tools, platforms, methods, certifications, or clearly named
-  abilities (e.g. "Figma", "SQL", "Negotiation", "User research").
-- Do NOT list industries, domains, products, or company areas as skills
-  (e.g. "Fintech", "Payments", "Consumer", "Banking"). Put those in keywords.
-- Do NOT list generic words as skills (e.g. "Code", "Engineering", "AI",
-  "Agents"). Use the specific term from the posting instead
-  (e.g. "Python", "LLM agents"), or leave it out.
-  - Every bullet under a "must have" or "requirements" heading should be
-  reflected in must_have_skills, unless it is only a years-of-experience
-  or location statement. Include relationship, negotiation,
-  communication, and stakeholder-management abilities when the posting
-  requires them (e.g. "Government relations", "Stakeholder management").
-- Do not copy a whole sentence. Write a short skill name.
-- role_type options: backend, frontend, full-stack, data, ml, devops,
-  mobile, design, product, sales, business, other.
+   Rules:
+   - Use ONLY information stated in the posting. Do not guess or add skills
+     that are not mentioned.
+   - must_have_skills: abilities, tools, or knowledge the posting requires
+     ("required", "must have", "you will need", items under requirements).
+     Every bullet under a must-have or requirements heading should be
+     reflected here, except statements that are only about years of
+     experience or location. Include relationship, negotiation,
+     communication, and stakeholder-management abilities when the posting
+     requires them (e.g. "Government relations", "Stakeholder management").
+   - nice_to_have_skills: skills the posting calls preferred, good to have,
+     a plus, or bonus.
+   - Skills are concrete things a candidate can have: programming languages,
+     frameworks, tools, platforms, methods, regulations, certifications, or
+     clearly named abilities (e.g. "Figma", "SQL", "Negotiation",
+     "User research").
+   - Do NOT list industries, domains, or company areas as skills
+     (e.g. "Fintech", "Payments", "Banking"). Put those in keywords.
+   - Do NOT list generic words as skills (e.g. "Code", "Engineering", "AI",
+     "Agents"). Use the specific term from the posting, or leave it out.
+   - Write short skill names, one per entry. Never copy a whole sentence.
+     No duplicates.
+   - seniority: one of "intern", "junior", "mid", "senior", "staff",
+     "lead", "unspecified". Base it on the title and the years of
+     experience asked.
+   - role_type: one of "backend", "frontend", "full-stack", "data", "ml",
+     "devops", "mobile", "design", "product", "sales", "business", "other".
+   - keywords: up to 15 important terms from the posting (domain terms,
+     products, methods) that are NOT already in the skill lists. Never
+     repeat a skill in keywords.
 
-- ◘keywords must not repeat anything already in the skill lists.
-Respond with ONLY a JSON object with exactly these keys:
-must_have_skills, nice_to_have_skills, seniority, role_type, keywords.
-No markdown, no commentary.
+   Respond with ONLY a JSON object with exactly these keys:
+   must_have_skills, nice_to_have_skills, seniority, role_type, keywords.
+   No markdown, no commentary.
