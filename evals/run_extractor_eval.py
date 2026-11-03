@@ -106,7 +106,9 @@ def _resolve_path(path: str) -> Path:
 def _selected_ids(gold_data: dict[str, Any], ids: str | None) -> list[str]:
     if not ids:
         return list(gold_data)
-    selected = [posting_id.strip() for posting_id in ids.split(",") if posting_id.strip()]
+    selected = [
+        posting_id.strip() for posting_id in ids.split(",") if posting_id.strip()
+    ]
     missing = [posting_id for posting_id in selected if posting_id not in gold_data]
     if missing:
         raise ValueError(f"Unknown posting IDs: {', '.join(missing)}")
@@ -128,7 +130,9 @@ def _print_result(
         output.nice_to_have_skills, expected["nice_to_have_skills"]
     )
     extra_must = score_extra(output.must_have_skills, expected["must_have_skills"])
-    extra_nice = score_extra(output.nice_to_have_skills, expected["nice_to_have_skills"])
+    extra_nice = score_extra(
+        output.nice_to_have_skills, expected["nice_to_have_skills"]
+    )
     print(
         f"{posting_id}: must F1={score.must_have_f1:.2f}, "
         f"nice F1={score.nice_to_have_f1:.2f}, "

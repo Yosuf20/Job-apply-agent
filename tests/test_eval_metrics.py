@@ -19,7 +19,9 @@ def test_normalize_and_skill_matching() -> None:
     assert skills_match("PCI-DSS", "pci dss")
     assert not skills_match("Python", "Jython")
     # The shared word is 1/5 of the union, so this pair is below the 0.5 threshold.
-    assert not skills_match("Government relations", "Government relationship management")
+    assert not skills_match(
+        "Government relations", "Government relationship management"
+    )
 
 
 def test_match_lists_is_one_to_one() -> None:

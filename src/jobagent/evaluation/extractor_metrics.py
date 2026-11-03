@@ -71,7 +71,11 @@ def match_lists(predicted: list[str], gold: list[str]) -> MatchLists:
 
     for prediction in predicted:
         match_index = next(
-            (index for index, expected in enumerate(remaining_gold) if skills_match(prediction, expected)),
+            (
+                index
+                for index, expected in enumerate(remaining_gold)
+                if skills_match(prediction, expected)
+            ),
             None,
         )
         if match_index is None:
@@ -94,11 +98,7 @@ def precision_recall_f1(
         return 1.0, 0.0, 0.0
     precision = matched_count / len(predicted)
     recall = matched_count / len(gold) if gold else 0.0
-    f1 = (
-        2 * precision * recall / (precision + recall)
-        if precision + recall
-        else 0.0
-    )
+    f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
     return precision, recall, f1
 
 
@@ -172,7 +172,9 @@ def aggregate(scores: list[ExtractionScore]) -> dict[str, float | int]:
         "must_have_precision": mean(score.must_have_precision for score in scores),
         "must_have_recall": mean(score.must_have_recall for score in scores),
         "must_have_f1": mean(score.must_have_f1 for score in scores),
-        "nice_to_have_precision": mean(score.nice_to_have_precision for score in scores),
+        "nice_to_have_precision": mean(
+            score.nice_to_have_precision for score in scores
+        ),
         "nice_to_have_recall": mean(score.nice_to_have_recall for score in scores),
         "nice_to_have_f1": mean(score.nice_to_have_f1 for score in scores),
         "seniority_accuracy": mean(score.seniority_correct for score in scores),

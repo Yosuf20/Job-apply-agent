@@ -59,7 +59,9 @@ def test_json_code_fences_are_supported() -> None:
     assert agent.run(_job()).seniority == "intern"
 
 
-def test_duplicates_cross_list_overlaps_and_keyword_skill_duplicates_are_cleaned() -> None:
+def test_duplicates_cross_list_overlaps_and_keyword_skill_duplicates_are_cleaned() -> (
+    None
+):
     agent, _ = _agent(
         [
             (
