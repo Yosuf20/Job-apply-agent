@@ -152,3 +152,29 @@ MAE, band accuracy, and Spearman correlation.
 **Why:** The baseline shows whether LLM judgment adds value beyond deterministic skill
 coverage.
 **Alternatives considered:** Reporting model scores without a deterministic comparator.
+
+## 020: SQLite tracker with SQLAlchemy
+**Date:** 2026-11-04
+**Decision:** Use SQLite through SQLAlchemy 2.0 typed declarative tables for the
+tracker, with UTC timestamps and SQLite foreign-key enforcement.
+**Why:** SQLite keeps the portfolio project local and dependency-light, while
+SQLAlchemy provides explicit typed persistence and transaction boundaries.
+**Alternatives considered:** Raw SQLite queries (less type-safe and harder to evolve).
+
+## 021: Profile privacy and match provenance
+**Date:** 2026-11-04
+**Decision:** Never store profile text or personal contact fields in the tracker;
+store only a SHA-256 profile hash with each match.
+**Why:** The tracker needs to identify which profile version produced a match
+without duplicating sensitive profile data.
+**Alternatives considered:** Storing a profile snapshot (unnecessary exposure).
+
+## 022: Match history and status transitions
+**Date:** 2026-11-04
+**Decision:** Keep every match result as history and return the newest by
+autoincrement ID. Statuses move forward through the application pipeline;
+any status may move to rejected or skipped, and rejected/skipped may reopen only
+to discovered or shortlisted.
+**Why:** Historical scores support reproducibility, while explicit transitions
+prevent accidental lifecycle regressions without blocking deliberate reopening.
+**Alternatives considered:** Overwriting matches; allowing arbitrary status changes.
