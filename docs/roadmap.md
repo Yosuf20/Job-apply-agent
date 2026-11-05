@@ -7,7 +7,7 @@ Build one step at a time. Commit after each step.
 - [x] 3. Job discovery (Greenhouse first)
 - [x] 4. Extractor agent
 - [x] 5. Matcher agent + eval script
-- [ ] 6. Tracker database (SQLite)
+- [x] 6. Tracker database (SQLite)
 - [ ] 7. Tailor agent
 - [ ] 8. Validator agent + Tailor <-> Validator loop
 - [ ] 9. PDF renderer + checks
@@ -16,7 +16,7 @@ Build one step at a time. Commit after each step.
 - [ ] 12. Applier agent (last, most fragile)
 
 ## Current step
-Step 6
+Step 7
 
 ## Later ideas
 - Cover letter generation
