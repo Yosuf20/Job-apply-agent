@@ -121,6 +121,16 @@ class MatchResult(BaseModel):
     missing_skills: list[str] = Field(default_factory=list)
 
 
+class JobSummary(BaseModel):
+    """Compact tracker view of a discovered job."""
+
+    job_id: str
+    company: str
+    title: str
+    status: str
+    latest_score: int | None = None
+
+
 def load_profile(path: str | Path) -> Profile:
     """Load and validate a Profile from a YAML file.
 
