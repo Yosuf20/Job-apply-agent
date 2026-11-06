@@ -165,3 +165,13 @@ class MatchInput(BaseModel):
     requirements: JobRequirements
     job_id: str
     job_title: str
+
+class TailoredBullet(BaseModel):
+    source_id : str
+    text : str
+
+class TailoredExperience(BaseModel):
+    company : str
+    start : int
+    end : int | None
+    bullets : list[TailoredBullet]
