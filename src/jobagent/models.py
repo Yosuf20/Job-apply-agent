@@ -166,35 +166,42 @@ class MatchInput(BaseModel):
     job_id: str
     job_title: str
 
+
 class TailoredBullet(BaseModel):
     """Custom Bullets points of any experince or project"""
-    source_id : str
-    text : str
+
+    source_id: str
+    text: str
+
 
 class TailoredExperience(BaseModel):
-    """Tailored experience for specific job """
+    """Tailored experience for specific job"""
 
-    company : str
-    start : str
-    end : str | None = None
-    title : str
-    bullets : list[TailoredBullet]
+    company: str
+    start: str
+    end: str | None = None
+    title: str
+    bullets: list[TailoredBullet]
+
 
 class TailoredProject(BaseModel):
     """One project, with only the bullets chosen for a specific target job."""
-    name : str
-    tech : list[str]
-    bullets : list[TailoredBullet]
+
+    name: str
+    tech: list[str]
+    bullets: list[TailoredBullet]
+
 
 class TailoredResume(BaseModel):
     """Complete tailored resume content for one job. Contains no contact details."""
 
-    job_id : str
-    role_label : str
-    summary : str
-    skills : list[str]
-    experience : list[TailoredExperience]
-    projects : list[TailoredProject]
+    job_id: str
+    role_label: str
+    summary: str
+    skills: list[str]
+    experience: list[TailoredExperience]
+    projects: list[TailoredProject]
+
 
 class TailorInput(BaseModel):
     profile: Profile
@@ -202,5 +209,3 @@ class TailorInput(BaseModel):
     job_id: str
     job_description: str
     feedback: list[str] = []
- 
-    
