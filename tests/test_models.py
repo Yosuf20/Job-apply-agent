@@ -127,7 +127,9 @@ def test_load_profile_missing_file_raises_error() -> None:
     with pytest.raises(FileNotFoundError):
         load_profile("data/nonexistent_profile.yaml")
 
+
 def test_tailored_resume_accepts_current_jobs_resume() -> None:
+    """checks if everything is loaded properly"""
     resume = TailoredResume(
         job_id="101",
         role_label="Software Development",
