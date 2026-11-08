@@ -84,14 +84,22 @@ uv run ruff check . && uv run ruff format .
 Commit `uv.lock` along with `pyproject.toml` whenever dependencies change.
 
 ## Git workflow
-- Commit at the end of every completed step, once tests and `ruff` pass.
-  One step = one commit (or a few small ones). Never commit failing code.
-- Use Conventional Commit messages, e.g. `feat: add Pydantic models and example profile`,
-  `test: cover profile validation`, `docs: update roadmap`, `fix: handle empty job description`.
-- Before committing, run `git status` and confirm no secrets or personal data are
-  staged (`.env`, `data/profile.yaml`, `data/output/`, `*.db`).
-- Do NOT push to a remote, force-push, rewrite history, or create branches unless I ask.
-- After committing, show me the commit message and `git log --oneline -3`.
+- Commit each file separately, with its own Conventional Commit message
+  that describes that file's change (e.g. `feat: add SHA-256 hashing helpers`,
+  `test: cover tracker status transitions`, `docs: record tracker decisions`).
+- Order commits so dependencies come first (a module before the code that
+  imports it, source before its tests, docs last). Every commit should
+  leave the project passing `uv run pytest` and `uv run ruff check .`.
+- Exception: `pyproject.toml` and `uv.lock` change together, in one commit
+  (e.g. `chore: add sqlalchemy dependency`).
+- Stage by explicit path only (`git add path/to/file`). Never use
+  `git add .` or `git add -A`.
+- Before each commit, run `git status` and confirm no secrets or personal
+  data are staged (`.env`, `data/profile.yaml`, `data/sources.yaml`,
+  `data/output/`, `*.db`, `evals/matcher_labeled.json`).
+- Do NOT push, force-push, rewrite history, or create branches unless I ask.
+- Do not add trailers or co-author lines to commit messages.
+- After the last commit of a step, show me `git log --oneline` for the step.
 
 ## Definition of done for each step
 - [ ] Code matches the prompt scope, nothing extra
@@ -100,3 +108,4 @@ Commit `uv.lock` along with `pyproject.toml` whenever dependencies change.
 - [ ] `docs/roadmap.md` checkbox updated
 - [ ] Any design choice recorded in `docs/decisions.md`
 - [ ] Changes committed with a clear message (no secrets staged)
+- [ ] Each file committed separately with a clear message
