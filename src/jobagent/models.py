@@ -209,3 +209,48 @@ class TailorInput(BaseModel):
     job_id: str
     job_description: str
     feedback: list[str] = []
+
+
+
+
+class ScoredBullet(BaseModel):
+    bullet: Bullet
+    score: float
+
+
+class SelectionLimits(BaseModel):
+    max_bullets_per_experience: int
+    max_bullets_per_project: int
+    max_projects: int
+    max_total_bullets: int
+
+
+class SelectedBullet(BaseModel):
+    source_id: str
+    text: str
+    score: float
+
+
+class SelectedExperience(BaseModel):
+    company: str
+    title: str
+    start: str
+    end: str | None = None
+    bullets: list[SelectedBullet]
+
+
+class SelectedProject(BaseModel):
+    Project
+    name: str
+    tech: list[str]
+    bullets: list[SelectedBullet]
+    score: float
+
+
+class Selection(BaseModel):
+    selected_experience : list[SelectedExperience]
+    selected_projects : list[SelectedProject]
+
+    def bullet_to_list(self) -> list[SelectedBullet]:
+        flat = [b for e in self.selected_experience for b in e.bullets]
+        return flat + [b for p in self.selected_projects for b in p.bullets]
