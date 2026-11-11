@@ -48,15 +48,16 @@ def _score_entry(bullets: list[Bullet], req: JobRequirements) ->list[Selected]:
     """Score every bullet of one job or project, remembering its position."""
     return [(pos, b, score_bullet(b, req)) for pos, b in enumerate(bullets)]
 
-def _to_selected(scored: list[Selected]) -> list[SelectedBullet]:
+def _to_selected(scored: list[Selected], position: set[int]) -> list[SelectedBullet]:
+    """it only created SelectedBullet object if the index is in the positon(parameter)"""
     return [
         SelectedBullet(
             source_id=bullet.id,
-            text=bullet.text
+            text=bullet.text,
             score = score,
-        ),
+        )
         for pos, bullet, score in scored
-        if pos in scored   
+        if pos in position 
     ]
 
 def _pick_project_positons(scored: list[Selected], max_n: int):
