@@ -1,5 +1,5 @@
 from jobagent.matching.skills import normalize, compare_skills
-from jobagent.models import Bullet, JobRequirements, Profile, Selection, SelectedProject, SelectionLimits, SelectedExperience, SelectedBullet, Project
+from jobagent.models import Bullet, JobRequirements, Profile, Selection, SelectedProject, SelectionLimits, SelectedExperience, SelectedBullet, Project, Experience
 from pydantic import BaseModel
 
 
@@ -61,7 +61,7 @@ def _to_selected(scored: list[Selected], position: set[int]) -> list[SelectedBul
         if pos in position 
     ]
 
-def _pick_project_positions(scored: list[Selected], max_n: int):
+def _pick_project_positions(sections: list[Project] | list[Experience], scored: list[Selected], max_n: int):
     """top 3 best scoring bullets. if all bullets scores 0 then the first one"""
     #it returns empty set if there is no bullets 
     #return set with positions of top scoring bullets
@@ -75,6 +75,11 @@ def _pick_project_positions(scored: list[Selected], max_n: int):
             break
         if sc > 0:
             picked.add(idx)
+
+
+    if sections is isinstance(sections[0], Experience) and len(picked) < 2:
+        picked.add(rank[1][0])
+        return picked
 
     return picked
 
@@ -109,7 +114,7 @@ def _select_projects(profile: Profile, req: JobRequirements, limits: SelectionLi
             score=score,
             tech=list(project.tech),
             bullets=_to_selected(bull,
-                (_pick_project_positions(bull, max_n=limits.max_bullets_per_project)),
+                (_pick_project_positions(profile.projects, bull, max_n=limits.max_bullets_per_project)),
             ),
         )
         for score, _, project, bull in kept
@@ -119,7 +124,7 @@ def _select_expirience(profile: Profile, req: JobRequirements, limits: Selection
     ranked = []
     for ex in profile.experience:
         scores = _score_entry(ex.bullets, req)
-        ranked.append(scores, ex)
+        ranked.append((scores, ex))
 
     return [
         SelectedExperience(
@@ -127,36 +132,16 @@ def _select_expirience(profile: Profile, req: JobRequirements, limits: Selection
             title=ex.title,
             start=ex.start,
             end=ex.end,
-            bullets=_to_selected(scores,),
-            )
+            bullets=_to_selected(scores, _pick_project_positions(profile.experience, scores[1], limits.max_bullets_per_project))
         )
         for scores, ex in ranked
     ]
 
 
 
-
 def select_content(profile : Profile, req : JobRequirements, limits : SelectionLimits) -> Selection:
     selected_projects=_select_projects(profile, req, limits)
-
-    ranked_projects = sorted(best_projects, key=lambda item: item[1], reverse=True)
-    ranked_projects = ranked_projects[:limits.max_projects]
-    final_pro = [item[0] for item in ranked_projects]
-    selected_projects = final_pro
-    
-    selected_experience = []
-    for exp in profile.experience:
-        bullet_in_exp = []
-        for exp_bullet in exp.bullets: 
-            temp = score_bullet(exp_bullet, req)
-            bullet_in_exp.append((exp_bullet, temp)) 
-
-        bullet_in_exp.sort(key=lambda item: item[1], reverse=True)
-        selected_bullets = bullet_in_exp[:limits.max_bullets_per_experience]
-        selected_bullets = [item[0] for item in selected_bullets]
-        selected_experience.append(exp.model_copy(update={"bullets": selected_bullets}))
-        
-
+    selected_experience = _select_expirience(profile, req, limits)
 
     return Selection(selected_experience=selected_experience, selected_projects=selected_projects)
 
