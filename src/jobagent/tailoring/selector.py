@@ -76,9 +76,9 @@ def _pick_project_positions(sections: list[Project] | list[Experience], scored: 
         if sc > 0:
             picked.add(idx)
 
-
-    if sections is isinstance(sections[0], Experience) and len(picked) < 2:
-        picked.add(rank[1][0])
+    if isinstance(sections[0], Experience) and len(picked) < 2:
+        if len(rank) > 1:
+            picked.add(rank[1][0])
         return picked
 
     return picked
