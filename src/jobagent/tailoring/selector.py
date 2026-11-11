@@ -50,6 +50,7 @@ def _score_entry(bullets: list[Bullet], req: JobRequirements) ->list[Selected]:
 
 def _to_selected(scored: list[Selected], position: set[int]) -> list[SelectedBullet]:
     """it only created SelectedBullet object if the index is in the positon(parameter)"""
+    #returns list of SelectedBullet using for loop and only if it exists in positions
     return [
         SelectedBullet(
             source_id=bullet.id,
@@ -60,8 +61,10 @@ def _to_selected(scored: list[Selected], position: set[int]) -> list[SelectedBul
         if pos in position 
     ]
 
-def _pick_project_positons(scored: list[Selected], max_n: int):
+def _pick_project_positions(scored: list[Selected], max_n: int):
     """top 3 best scoring bullets. if all bullets scores 0 then the first one"""
+    #it returns empty set if there is no bullets 
+    #return set with positions of top scoring bullets
     rank = []
     if not scored:
         return set()
@@ -76,6 +79,7 @@ def _pick_project_positons(scored: list[Selected], max_n: int):
     return picked
 
 def _project_score(scored, project: Project, req):
+    """returns the total score of project which is bulletscore + matching tech stack"""
     score = sorted((s for _, _, s in scored), reverse=True)[:PROJECT_TOP_BULLET]
     wanted = set()
     for skill in [*req.must_have_skills, *req.nice_to_have_skills, *req.keywords]:
@@ -96,42 +100,44 @@ def _select_projects(profile: Profile, req: JobRequirements, limits: SelectionLi
         ranked.append((_project_score(b_scored, p, req), idx, p, b_scored))
 
     ranked.sort(key=lambda item: item[0], reverse=True)   
-    key = ranked[:limits.max_projects]     
-    key.sort(key=lambda item:item[1])
+    kept = ranked[:limits.max_projects]     
+    kept.sort(key=lambda item:item[1])
 
     return [
         SelectedProject(
             name=project.name,
-            bullets=(_pick_project_positons(score, max_n=limits.max_bullets_per_project)),
             score=score,
-            tech=list(project.tech
+            tech=list(project.tech),
+            bullets=_to_selected(bull,
+                (_pick_project_positions(bull, max_n=limits.max_bullets_per_project)),
             ),
         )
-        for score, _, project, bull in key
+        for score, _, project, bull in kept
+    ]
+
+def _select_expirience(profile: Profile, req: JobRequirements, limits: SelectionLimits) -> list[SelectedProject]:
+    ranked = []
+    for ex in profile.experience:
+        scores = _score_entry(ex.bullets, req)
+        ranked.append(scores, ex)
+
+    return [
+        SelectedExperience(
+            company=ex.company,
+            title=ex.title,
+            start=ex.start,
+            end=ex.end,
+            bullets=_to_selected(scores,),
+            )
+        )
+        for scores, ex in ranked
     ]
 
 
 
+
 def select_content(profile : Profile, req : JobRequirements, limits : SelectionLimits) -> Selection:
-    best_projects = []
-    for project in profile.projects:
-        curr_project = []
-        for bullet in project.bullets:
-            temp_score = score_bullet(bullet, req)
-            curr_project.append((bullet, temp_score))
-
-        ranked_bullet = sorted(curr_project, key=lambda item: item[1], reverse=True)
-        selected = ranked_bullet[:limits.max_bullets_per_project]
-
-        tech_stack_score = 0
-        for tech in project.tech:
-            if (tech in req.must_have_skills or tech in req.nice_to_have_skills or tech in req.keywords):
-                tech_stack_score += 2
-        pro_score = sum(item[1] for item in curr_project)
-
-        best_projects.append(
-            (selected, pro_score + tech_stack_score)
-        )
+    selected_projects=_select_projects(profile, req, limits)
 
     ranked_projects = sorted(best_projects, key=lambda item: item[1], reverse=True)
     ranked_projects = ranked_projects[:limits.max_projects]
