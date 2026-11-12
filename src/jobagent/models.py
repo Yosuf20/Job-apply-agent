@@ -220,6 +220,8 @@ class ScoredBullet(BaseModel):
 
 class SelectionLimits(BaseModel):
     max_bullets_per_experience: int
+    min_bullets_per_experience: int
+    min_bullets_per_project: int
     max_bullets_per_project: int
     max_projects: int
     max_total_bullets: int
@@ -240,7 +242,6 @@ class SelectedExperience(BaseModel):
 
 
 class SelectedProject(BaseModel):
-    Project
     name: str
     tech: list[str]
     bullets: list[SelectedBullet]
