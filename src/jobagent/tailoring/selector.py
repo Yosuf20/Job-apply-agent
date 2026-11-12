@@ -61,25 +61,19 @@ def _to_selected(scored: list[Selected], position: set[int]) -> list[SelectedBul
         if pos in position 
     ]
 
-def _pick_project_positions(sections: list[Project] | list[Experience], scored: list[Selected], max_n: int):
+def _pick_project_positions(scored: list[Selected], min_n: int, max_n: int):
     """top 3 best scoring bullets. if all bullets scores 0 then the first one"""
     #it returns empty set if there is no bullets 
     #return set with positions of top scoring bullets
-    rank = []
     if not scored:
         return set()
     rank = sorted(scored, key=lambda item: (-item[2], item[0]))
-    picked = {rank[0][0]}
+    picked: set[int] = set() 
     for idx, _, sc in rank:
         if len(picked) >= max_n:
             break
-        if sc > 0:
+        if sc > 0 or len(picked) < min_n:
             picked.add(idx)
-
-    if isinstance(sections[0], Experience) and len(picked) < 2:
-        if len(rank) > 1:
-            picked.add(rank[1][0])
-        return picked
 
     return picked
 
@@ -114,7 +108,7 @@ def _select_projects(profile: Profile, req: JobRequirements, limits: SelectionLi
             score=score,
             tech=list(project.tech),
             bullets=_to_selected(bull,
-                (_pick_project_positions(profile.projects, bull, max_n=limits.max_bullets_per_project)),
+                (_pick_project_positions(bull, min_n=limits.min_bullets_per_project, max_n=limits.max_bullets_per_project )),
             ),
         )
         for score, _, project, bull in kept
@@ -132,7 +126,7 @@ def _select_expirience(profile: Profile, req: JobRequirements, limits: Selection
             title=ex.title,
             start=ex.start,
             end=ex.end,
-            bullets=_to_selected(scores, _pick_project_positions(profile.experience, scores[1], limits.max_bullets_per_project))
+            bullets=_to_selected(scores, _pick_project_positions(scores, min_n=limits.min_bullets_per_experience ,max_n=limits.max_bullets_per_experience))
         )
         for scores, ex in ranked
     ]
