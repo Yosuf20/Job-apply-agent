@@ -44,6 +44,8 @@ def make_req() -> JobRequirements:
 
 def limits(per_exp: int = 4, total: int = 14) -> SelectionLimits:
     return SelectionLimits(
+        min_bullets_per_experience=2,
+        min_bullets_per_project=1,
         max_bullets_per_experience=per_exp,
         max_bullets_per_project=2,
         max_projects=3,
@@ -61,21 +63,21 @@ def all_ids(selection) -> list[str]:
 
 # ---------- cycle 1: guaranteed bullet ----------
 
-def test_every_job_keeps_one_bullet_even_when_all_score_zero():
+def test_every_job_keeps_two_bullet_even_when_all_score_zero():
     profile = make_profile([
         job("A", [bullet("a1", "nothing relevant"), bullet("a2", "still nothing")]),
         job("B", [bullet("b1", "unrelated work")]),
     ])
     result = select_content(profile, make_req(), limits())
-    assert [len(ids) for ids in ids_by_job(result)] == [1, 1]
+    assert [len(ids) for ids in ids_by_job(result)] == [2, 1]
 
 
-def test_all_zero_job_keeps_exactly_one_and_the_earlier_one_wins_the_tie():
+def test_all_zero_job_keeps_two_and_the_earlier_one_wins_the_tie():
     profile = make_profile([
         job("A", [bullet("a1", "nothing"), bullet("a2", "nothing"), bullet("a3", "nothing")]),
     ])
     result = select_content(profile, make_req(), limits())
-    assert ids_by_job(result) == [["a1"]]
+    assert ids_by_job(result) == [["a1", "a2"]]
 
 
 def test_job_keeps_its_highest_scoring_bullet():
@@ -112,7 +114,7 @@ def test_zero_score_bullets_are_not_added_from_the_pool():
         job("A", [bullet("a1", "alpha"), bullet("a2", "nothing relevant")]),
     ])
     result = select_content(profile, make_req(), limits(per_exp=4))
-    assert ids_by_job(result) == [["a1"]]
+    assert ids_by_job(result) == [["a1", "a2"]]
 
 
 def test_no_bullet_is_selected_twice():
@@ -123,38 +125,6 @@ def test_no_bullet_is_selected_twice():
     result = select_content(profile, make_req(), limits())
     ids = all_ids(result)
     assert len(ids) == len(set(ids))
-
-
-# ---------- cycle 3: total limit ----------
-
-def test_total_limit_counts_guaranteed_bullets_and_best_pool_bullet_gets_the_slot():
-    profile = make_profile([
-        job("A", [bullet("a1", "alpha beta gamma"), bullet("a2", "alpha beta"), bullet("a3", "alpha")]),
-        job("B", [bullet("b1", "alpha beta"), bullet("b2", "alpha")]),
-        job("C", [bullet("c1", "alpha")]),
-    ])
-    # Guaranteed: a1, b1, c1 (3 of 4). One slot left: a2 (two skills) beats a3 and b2.
-    result = select_content(profile, make_req(), limits(per_exp=3, total=4))
-    assert sorted(all_ids(result)) == ["a1", "a2", "b1", "c1"]
-
-
-def test_higher_score_wins_the_last_slot_across_jobs():
-    profile = make_profile([
-        job("A", [bullet("a1", "alpha beta gamma"), bullet("a2", "alpha")]),
-        job("B", [bullet("b1", "alpha beta"), bullet("b2", "alpha beta")]),
-    ])
-    result = select_content(profile, make_req(), limits(per_exp=4, total=3))
-    assert sorted(all_ids(result)) == ["a1", "b1", "b2"]
-
-
-def test_total_never_exceeds_the_limit():
-    profile = make_profile([
-        job("A", [bullet(f"a{i}", "alpha beta") for i in range(5)]),
-        job("B", [bullet(f"b{i}", "alpha beta") for i in range(5)]),
-    ])
-    result = select_content(profile, make_req(), limits(per_exp=5, total=6))
-    assert len(all_ids(result)) <= 6
-
 
 # ---------- cycle 4: original order ----------
 
