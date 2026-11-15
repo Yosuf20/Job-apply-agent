@@ -143,7 +143,3 @@ def select_content(profile : Profile, req : JobRequirements, limits : SelectionL
 
 def order_skills():
     pass
-        
-         
-         
-         
