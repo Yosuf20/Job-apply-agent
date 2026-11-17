@@ -14,10 +14,10 @@ from jobagent.models import (
     Profile,
     Project,
     Skill,
-    load_profile,
-    TailoredResume,
+    TailoredBullet,
     TailoredExperience,
-    TailoredBullet
+    TailoredResume,
+    load_profile,
 )
 
 
@@ -137,15 +137,18 @@ def test_tailored_resume_accepts_current_jobs_resume() -> None:
         skills=["python", "langchain"],
         experience=[
             TailoredExperience(
-                company="Airtel", start="2", title = "AI Engg",
-                bullets=[TailoredBullet(source_id="b1", text="Optimized RAG System")]
-                )
+                company="Airtel",
+                start="2",
+                title="AI Engg",
+                bullets=[TailoredBullet(source_id="b1", text="Optimized RAG System")],
+            )
         ],
-        projects=[]
+        projects=[],
     )
 
-    assert resume.experience[0].end is None #this checks if end date is not given then model assign it as None
-
+    assert (
+        resume.experience[0].end is None
+    )  # this checks if end date is not given then model assign it as None
 
 
 def test_get_settings_defaults_when_no_env_present(
@@ -174,5 +177,3 @@ def test_get_settings_defaults_when_no_env_present(
     assert settings.output_dir == Path("data/output")
     assert settings.database_path == Path("data/tracker.db")
     assert settings.sources_path == Path("data/sources.yaml")
-
-
