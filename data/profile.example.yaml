@@ -11,8 +11,6 @@ summary: >
 skills:
   - name: "Python"
     tags: ["language", "backend"]
-  - name: "TypeScript"
-    tags: ["language", "frontend", "fullstack"]
   - name: "FastAPI"
     tags: ["framework", "backend", "api"]
   - name: "PostgreSQL"
