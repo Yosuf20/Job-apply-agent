@@ -7,7 +7,7 @@ from typing import Any, Literal
 from dotenv import dotenv_values
 from pydantic import BaseModel, Field
 
-LLMProviderType = Literal["anthropic", "openai", "gemini"]
+LLMProviderType = Literal["anthropic", "openai", "gemini", "groq", "openrouter"]
 
 
 class Settings(BaseModel):
@@ -17,6 +17,7 @@ class Settings(BaseModel):
     llm_api_key: str = ""
     model_small: str = ""
     model_strong: str = ""
+    llm_base_url: str | None = None
     llm_timeout_seconds: int = Field(default=60, ge=1)
     profile_path: Path = Path("data/profile.yaml")
     output_dir: Path = Path("data/output")
@@ -57,6 +58,7 @@ def get_settings(env_file: str | Path | None = None) -> Settings:
     return Settings(
         llm_provider=resolve("LLM_PROVIDER", "anthropic"),
         llm_api_key=resolve("LLM_API_KEY", ""),
+        llm_base_url=resolve("LLM_BASE_URL", ""),
         model_small=resolve("LLM_MODEL_SMALL", ""),
         model_strong=resolve("LLM_MODEL_STRONG", ""),
         llm_timeout_seconds=timeout_val,
