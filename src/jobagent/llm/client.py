@@ -1,6 +1,7 @@
 """Provider-agnostic LLM client wrapper and adapters."""
 
 import logging
+import os
 import re
 import ssl
 import time
@@ -174,9 +175,15 @@ class AnthropicProvider:
 class OpenAIProvider:
     """Adapter for the OpenAI Chat Completions API."""
 
-    def __init__(self, api_key: str, timeout_seconds: int = 60) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        timeout_seconds: int = 60,
+        base_url: str | None = None,
+    ) -> None:
         self.api_key = api_key
         self.timeout_seconds = timeout_seconds
+        self.base_url = base_url
 
     def generate(
         self,
@@ -188,12 +195,15 @@ class OpenAIProvider:
     ) -> LLMResponse:
         import openai
 
-        # OpenAI SDK expects timeout in seconds (passed as float or int).
-        client = openai.OpenAI(
-            api_key=self.api_key,
-            timeout=float(self.timeout_seconds),
-            max_retries=0,
-        )
+        # The OpenAI SDK also supports providers exposing an OpenAI-compatible API.
+        client_kwargs: dict[str, Any] = {
+            "api_key": self.api_key,
+            "timeout": float(self.timeout_seconds),
+            "max_retries": 0,
+        }
+        if self.base_url:
+            client_kwargs["base_url"] = self.base_url
+        client = openai.OpenAI(**client_kwargs)
 
         messages: list[dict[str, str]] = []
         if system:
@@ -272,6 +282,30 @@ class OpenAIProvider:
             output_tokens=out_tokens,
             model=model,
             latency_seconds=latency,
+        )
+
+
+class OpenAICompatibleProvider(OpenAIProvider):
+    """Adapter for providers exposing an OpenAI-compatible Chat Completions API.
+
+    Examples include Groq, OpenRouter, Cerebras, Together AI, and compatible
+    self-hosted inference servers. Set LLM_BASE_URL to the provider's API base URL.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str,
+        timeout_seconds: int = 60,
+    ) -> None:
+        if not base_url.strip():
+            raise ValueError(
+                "LLM_BASE_URL is required when using an OpenAI-compatible provider."
+            )
+        super().__init__(
+            api_key=api_key,
+            timeout_seconds=timeout_seconds,
+            base_url=base_url.strip(),
         )
 
 
@@ -535,7 +569,20 @@ def get_client(settings: Settings | None = None) -> LLMClient:
             api_key=cfg.llm_api_key, timeout_seconds=cfg.llm_timeout_seconds
         )
     else:
-        raise ValueError(f"Unsupported LLM provider: {cfg.llm_provider}")
+        # Any provider other than the three native SDK integrations is treated
+        # as OpenAI-compatible. Configure its endpoint through LLM_BASE_URL.
+        base_url = (cfg.llm_base_url or "").strip()
+        print("here is the base_url",base_url)
+        if not base_url:
+            raise ValueError(
+                f"Provider '{cfg.llm_provider}' is not a built-in provider. "
+                "Set LLM_BASE_URL to its OpenAI-compatible API endpoint."
+            )
+        provider = OpenAICompatibleProvider(
+            api_key=cfg.llm_api_key,
+            base_url=base_url,
+            timeout_seconds=cfg.llm_timeout_seconds,
+        )
 
     return LLMClient(
         provider=provider,
