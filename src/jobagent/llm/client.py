@@ -572,7 +572,6 @@ def get_client(settings: Settings | None = None) -> LLMClient:
         # Any provider other than the three native SDK integrations is treated
         # as OpenAI-compatible. Configure its endpoint through LLM_BASE_URL.
         base_url = (cfg.llm_base_url or "").strip()
-        print("here is the base_url",base_url)
         if not base_url:
             raise ValueError(
                 f"Provider '{cfg.llm_provider}' is not a built-in provider. "
