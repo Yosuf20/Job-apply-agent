@@ -115,6 +115,7 @@ def _select_projects(profile: Profile, req: JobRequirements, limits: SelectionLi
     ]
 
 def _select_expirience(profile: Profile, req: JobRequirements, limits: SelectionLimits) -> list[SelectedProject]:
+    
     ranked = []
     for ex in profile.experience:
         scores = _score_entry(ex.bullets, req)
