@@ -141,6 +141,5 @@ def select_content(profile : Profile, req : JobRequirements, limits : SelectionL
     return Selection(selected_experience=selected_experience, selected_projects=selected_projects)
 
 
-
 def order_skills():
     pass
