@@ -212,7 +212,6 @@ class TailorInput(BaseModel):
 
 
 
-
 class ScoredBullet(BaseModel):
     bullet: Bullet
     score: float
@@ -255,3 +254,5 @@ class Selection(BaseModel):
     def bullet_to_list(self) -> list[SelectedBullet]:
         flat = [b for e in self.selected_experience for b in e.bullets]
         return flat + [b for p in self.selected_projects for b in p.bullets]
+
+
