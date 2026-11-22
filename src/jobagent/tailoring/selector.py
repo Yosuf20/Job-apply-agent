@@ -1,6 +1,7 @@
 from jobagent.matching.skills import normalize, compare_skills
 from jobagent.models import Bullet, JobRequirements, Profile, Selection, SelectedProject, SelectionLimits, SelectedExperience, SelectedBullet, Project, Experience
 from pydantic import BaseModel
+from jobagent.models import SelectedSkills
 
 
 
@@ -141,5 +142,21 @@ def select_content(profile : Profile, req : JobRequirements, limits : SelectionL
     return Selection(selected_experience=selected_experience, selected_projects=selected_projects)
 
 
-def order_skills():
-    pass
+def order_skills(profile: Profile, req: JobRequirements) -> list[str]:
+    matched = []
+    not_matched = []
+    skill_wanted = set()
+    for req_skill in (*req.keywords, *req.nice_to_have_skills, *req.must_have_skills):
+        skill_wanted.add(normalize(req_skill))
+
+    for skill in profile.skills:
+        if normalize(skill.name) in skill_wanted:
+            matched.append(skill)
+        else:
+            not_matched.append(skill)
+
+    return [
+        skill.name
+        for skill in (*matched, *not_matched)
+    ]
+
