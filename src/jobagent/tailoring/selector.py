@@ -1,7 +1,5 @@
-from jobagent.matching.skills import normalize, compare_skills
-from jobagent.models import Bullet, JobRequirements, Profile, Selection, SelectedProject, SelectionLimits, SelectedExperience, SelectedBullet, Project, Experience
-from pydantic import BaseModel
-from jobagent.models import SelectedSkills
+from jobagent.matching.skills import normalize
+from jobagent.models import Bullet, JobRequirements, Profile, Selection, SelectedProject, SelectionLimits, SelectedExperience, SelectedBullet, Project
 
 
 
