@@ -1,6 +1,6 @@
 import pytest
-from jobagent.models import Bullet, Experience, JobRequirements, Profile
-from jobagent.tailoring.selector import SelectionLimits, score_bullet, select_content
+from jobagent.models import Bullet, Experience, JobRequirements, Profile, Skill
+from jobagent.tailoring.selector import SelectionLimits, score_bullet, select_content, order_skills
 
 
 # ---------- helpers ----------
@@ -25,6 +25,20 @@ def make_profile(experiences: list[Experience]) -> Profile:
         summary="",
         skills=[],
         experience=experiences,
+        projects=[],
+        education=[],
+    )
+
+def make_profile_with_skills(names : list[str]) -> Profile:
+    return Profile(
+        name="Test Person",
+        email="test@example.com",
+        phone="000",
+        location="Nowhere",
+        links=[],
+        summary="",
+        skills=[Skill(name=n, tags=[]) for n in names],
+        experience=[],
         projects=[],
         education=[],
     )
@@ -194,3 +208,22 @@ def test_same_input_gives_same_output():
     first = select_content(profile, req, limits())
     second = select_content(profile, req, limits())
     assert first.model_dump() == second.model_dump()
+
+def skills_for_job(skills : list[str]):
+    return JobRequirements(
+        must_have_skills=skills or [],
+        nice_to_have_skills=[],
+        seniority="mid",
+        role_type="Backend",
+        keywords=[]
+    )
+
+
+def test_for_orderskills():
+    profile = make_profile_with_skills(["Langchain", "Git", "Docker", "Langgraph"])
+
+    req = skills_for_job(["langchain", "langgraph"])
+
+    result = order_skills(profile, req)
+
+    assert result == ["Langchain", "Langgraph", "Git", "Docker"]
