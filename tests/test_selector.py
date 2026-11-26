@@ -227,3 +227,13 @@ def test_for_orderskills():
     result = order_skills(profile, req)
 
     assert result == ["Langchain", "Langgraph", "Git", "Docker"]
+
+
+def test_requirement_missing_from_profile_is_not_added():
+    profile = make_profile_with_skills(["Python", "Docker"])
+    req = skills_for_job(["FAISS", "Docker"])
+
+    result = order_skills(profile, req)
+
+    assert result == ["Docker", "Python"]
+    assert "FAISS" not in result
