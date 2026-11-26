@@ -141,6 +141,7 @@ def select_content(profile : Profile, req : JobRequirements, limits : SelectionL
 
 
 def order_skills(profile: Profile, req: JobRequirements) -> list[str]:
+    """it order the skill section of your resume acc to the most relevent skill first acc to job"""
     matched = []
     not_matched = []
     skill_wanted = set()
