@@ -237,3 +237,12 @@ def test_requirement_missing_from_profile_is_not_added():
 
     assert result == ["Docker", "Python"]
     assert "FAISS" not in result
+
+def no_match_skill():
+    profile = make_profile_with_skills(["Python", "Langgraph"])
+
+    req = skills_for_job(["API", "Rust"])
+
+    result = order_skills(profile, req)
+
+    assert result == ["Python", "Langgraph"]
